@@ -13,6 +13,7 @@ class Order extends Model
     public $incrementing = false;
 
    protected $fillable = [
-       'data'
+       'data',
+       'status',
    ];
 }

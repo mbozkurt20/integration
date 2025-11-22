@@ -15,6 +15,7 @@ return new class extends Migration
             $table->uuid('id')->primary();
             $table->string('provider')->nullable();
             $table->json('data')->nullable();
+            $table->string('status')->nullable();
             $table->timestamps();
         });
     }

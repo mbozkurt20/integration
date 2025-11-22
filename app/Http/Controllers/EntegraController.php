@@ -18,4 +18,14 @@ class EntegraController extends Controller
 
      return response()->json(['success' => true, 'pos_ticket' => $order->id]);
    }
+
+    static function cancel(Request $request)
+    {
+        $order =  Order::create([
+            'data' => json_encode($request->all()),
+            'status' => 'cancel'
+        ]);
+
+        return response()->json(['success' => true, 'pos_ticket' => $order->id]);
+    }
 }
