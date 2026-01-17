@@ -40,10 +40,10 @@ class OrderController extends Controller
 
         $provider = Provider::find($orderData['providerId']);
         // 👉 Token YOK
-        $response = Http::post("{$this->endpoint}/entegra/add-order".$provider->name, [
+        $response = Http::post("{$this->endpoint}/entegra/add-order", [
             'pid'           => $order->pid,
             'restaurant_id' => $order->restaurant_id,
-            'provider_id'   => $order->provider_id,
+            'provider'      => json_encode($provider),
             'order_id'      => $order->order_id,
             'shortCode'     => $order->shortCode,
             'status'        => $order->status,
