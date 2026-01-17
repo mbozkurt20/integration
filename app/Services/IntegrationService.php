@@ -33,8 +33,4 @@ class IntegrationService {
             return [];
         }
     }
-
-    static function createProvider($provider){
-
-    }
 }

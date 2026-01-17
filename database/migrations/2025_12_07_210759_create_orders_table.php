@@ -13,9 +13,13 @@ return new class extends Migration
     {
         Schema::create('orders', function (Blueprint $table) {
             $table->uuid('id')->primary();
-            $table->string('provider')->nullable();
-            $table->json('data')->nullable();
-            $table->string('status')->nullable();
+            $table->string('pid');
+            $table->foreignId('restaurant_id')->constrained('restaurants');
+            $table->foreignId('provider_id')->constrained('providers');
+            $table->string('order_id');
+            $table->string('shortCode');
+            $table->string('status');
+            $table->json('data');
             $table->timestamps();
         });
     }

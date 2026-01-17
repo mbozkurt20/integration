@@ -6,6 +6,7 @@ class RestaurantService
 {
     private static $token = '';
 
+    //İŞLETME TOKEN İLE İŞLEM YAPAR
     public static function setToken($token)
     {
         self::$token = $token;
@@ -41,7 +42,7 @@ class RestaurantService
         $curl = curl_init();
 
         curl_setopt_array($curl, array(
-            CURLOPT_URL => 'https://gpspos.client.posentegra.com/api/restaurant/'.$restaurantId,
+            CURLOPT_URL => "https://gpspos.client.posentegra.com/api/restaurant/$restaurantId",
             CURLOPT_RETURNTRANSFER => true,
             CURLOPT_ENCODING => '',
             CURLOPT_MAXREDIRS => 10,
@@ -64,7 +65,7 @@ class RestaurantService
         $curl = curl_init();
 
         curl_setopt_array($curl, array(
-            CURLOPT_URL => 'https://gpspos.client.posentegra.com/api/restaurant/'.$restaurantId,
+            CURLOPT_URL => "https://gpspos.client.posentegra.com/api/restaurant/$restaurantId",
             CURLOPT_RETURNTRANSFER => true,
             CURLOPT_ENCODING => '',
             CURLOPT_MAXREDIRS => 10,

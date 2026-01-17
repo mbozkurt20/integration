@@ -1,15 +1,15 @@
 <?php
 
-namespace App\Http\Controllers;
+namespace App\Http\Controllers\Api;
 
+use App\Http\Controllers\Controller;
 use App\Models\Provider;
 use App\Models\ProviderPaymentMethod;
 use App\Services\IntegrationService;
-use Illuminate\Http\Request;
 
 class IntegrationController extends Controller
 {
-    // Bu kontroller default veriler için kullanılıyor
+    // provider payment method db ekleri entegrasyon türleri ve methodları
     function paymentMethods()
     {
         $providers = IntegrationService::getProvidersWithPaymentMethods();

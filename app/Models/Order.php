@@ -12,8 +12,20 @@ class Order extends Model
     protected $keyType = 'string';
     public $incrementing = false;
 
-   protected $fillable = [
-       'data',
-       'status',
-   ];
+    protected $fillable = [
+        'data',
+        'status',
+        'pid',
+        'restaurant_id',
+        'provider_id',
+        'restaurant_id',
+        'order_id',
+        'shortCode',
+    ];
+
+
+    public function restaurant()
+    {
+        return $this->belongsTo(Restaurant::class,'restaurant_id');
+    }
 }

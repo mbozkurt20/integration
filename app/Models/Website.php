@@ -6,17 +6,13 @@ use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\SoftDeletes;
 
-class Restaurant extends Model
+class Website extends Model
 {
     use HasFactory,SoftDeletes;
-    protected $fillable = [
-        'business_id',
-        'name',
-        'restaurant_id',
-        'website',
-    ];
 
-    public function business(){
-        return $this->belongsTo(Business::class,'business_id');
-    }
+    protected $fillable = [
+        'name',
+        'url',
+        'status',
+    ];
 }

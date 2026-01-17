@@ -15,11 +15,9 @@ return new class extends Migration
             $table->id();
             $table->foreignId('business_id')->constrained('businesses');
             $table->string('name');
+            $table->string('logo')->nullable();
             $table->string('website')->nullable(); //hangi siteden geliyor
-            $table->json('getir')->nullable();
-            $table->json('trendyol')->nullable();
-            $table->json('yemeksepeti')->nullable();
-            $table->json('migros')->nullable();
+            $table->string('restaurant_id')->nullable(); //posentegra restaurant ıd
             $table->timestamps();
             $table->softDeletes();
         });
