@@ -42,6 +42,7 @@ class RestaurantController extends Controller
                 'business_id' => $business->id,
                 'name' => $data['name'],
                 'restaurant_id' => $restaurant->restaurant_id,
+                'website' => $data['website'],
             ]);
         }
 
