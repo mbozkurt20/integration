@@ -40,6 +40,7 @@ class RestaurantProviderController extends Controller
         RestaurantProviderService::setToken($token);
 
         $restaurantId = $restaurant->id;
+
         if (!RestaurantProvider::where('restaurant_id', $restaurantId)->where('provider_id', $providerId)->exists()) {
             $response = RestaurantProviderService::newRestaurantProvider($restaurant->restaurant_id, $provider->provider_id, $request->all());
 
@@ -67,7 +68,7 @@ class RestaurantProviderController extends Controller
         } else {
             $response = RestaurantProviderService::updateRestaurantProvider($restaurant->restaurant_id, $provider->provider_id, $request->all());
 
-            if ($response->success) {
+            if ($response->detail->status) {
                 $response = $response->detail->integrations[0];
 
                 RestaurantProvider::where('restaurant_id', $restaurantId)->where('provider_id', $providerId)->update([
@@ -84,7 +85,7 @@ class RestaurantProviderController extends Controller
                     'information' => json_encode($response->information),
                 ]);
 
-                return JsonResponse::success('Restaurant Başarıyla Güncellendi', $restaurant, 201);
+                return ['success' => true,'data' => $restaurant];
             } else {
                 return JsonResponse::error('Provider not updated');
             }
