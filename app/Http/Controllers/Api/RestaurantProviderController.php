@@ -26,7 +26,7 @@ class RestaurantProviderController extends Controller
     function store(Request $request, string $restaurantId, int $providerId)
     {
         $restaurant = Restaurant::where('restaurant_id',$restaurantId)->first();
-dd($restaurant,$restaurantId,$providerId);
+
         if (!$restaurant) {
             return JsonResponse::error('Restaurant not found');
         }
