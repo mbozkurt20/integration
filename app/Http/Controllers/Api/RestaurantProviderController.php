@@ -66,9 +66,8 @@ class RestaurantProviderController extends Controller
                 return JsonResponse::error('Provider not created');
             }
         } else {
-            return $request->all();
             $response = RestaurantProviderService::updateRestaurantProvider($restaurant->restaurant_id, $provider->provider_id, $request->all());
-
+return $response;
             if ($response->detail->status) {
                 $response = $response->detail->integrations[0];
 
