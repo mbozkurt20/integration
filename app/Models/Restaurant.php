@@ -9,11 +9,13 @@ use Illuminate\Database\Eloquent\SoftDeletes;
 class Restaurant extends Model
 {
     use HasFactory,SoftDeletes;
+
     protected $fillable = [
         'business_id',
         'name',
         'restaurant_id',
         'website',
+        'website_restaurant_id',
     ];
 
     public function business(){
