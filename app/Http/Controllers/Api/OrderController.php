@@ -36,26 +36,16 @@ class OrderController extends Controller
         ]);
 
         $provider = Provider::find($orderData['providerId']);
-        // 👉 Token YOK
-        $response = Http::post("{$restaurant->website}/entegra/add-order", [
-            'pid'           => $order->pid,
-            'restaurant_id' => $order->restaurant_id,
-            'provider'      => json_encode($provider),
-            'order_id'      => $order->order_id,
-            'shortCode'     => $order->shortCode,
-            'status'        => $order->status,
-            'data'          => json_encode($orderData),
-        ]);
 
-        Log::info('Giden webhook response', [
-            'status' => $response->status(),
-            'body'   => $response->body(),
-        ]);
+        $response = Http::withHeaders([
+            'Content-Type' => 'application/json',
+            'Accept' => 'application/json',
+        ])->post(
+            "{$restaurant->website}/entegra/add-order",
+            $orderData
+        );
 
-        return response()->json([
-            'success'    => true,
-            'pos_ticket' => $order->id
-        ]);
+        return $response;
     }
 
     /*
@@ -69,17 +59,17 @@ class OrderController extends Controller
         ]);
 
         $orderData = $request->all();
+        $restaurant = Restaurant::where('restaurant_id',$orderData['restaurantId'])->first();
+        $provider = Provider::where('provider_id',$orderData['providerId'])->first();
 
-        $response = Http::post("{$this->endpoint}/entegra/cancel-order", [
-            'pid'           => $order->pid,
-            'restaurant_id' => $order->restaurant_id,
-            'provider_id'   => $order->provider_id,
-            'order_id'      => $order->order_id,
-            'shortCode'     => $order->shortCode,
-            'status'        => $order->status,
-            'data'          => $orderData,
-        ]);
+        $response = Http::withHeaders([
+            'Content-Type' => 'application/json',
+            'Accept' => 'application/json',
+        ])->post(
+            "{$restaurant->website}/entegra/cancel-order",
+            $orderData
+        );
 
-        return response()->json(['success' => true, 'pos_ticket' => $order->id]);
+        return $response;
     }
 }

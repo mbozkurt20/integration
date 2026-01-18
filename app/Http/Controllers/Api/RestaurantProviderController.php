@@ -25,7 +25,7 @@ class RestaurantProviderController extends Controller
 
     function store(Request $request, string $restaurantId, int $providerId)
     {
-        $restaurant = Restaurant::where('restaurant_id',$restaurantId)->first();
+        $restaurant = Restaurant::where('restaurant_id', $restaurantId)->first();
 
         if (!$restaurant) {
             return JsonResponse::error('Restaurant not found');
@@ -67,13 +67,13 @@ class RestaurantProviderController extends Controller
             }
         } else {
             $response = RestaurantProviderService::updateRestaurantProvider($restaurant->restaurant_id, $provider->provider_id, $request->all());
-return $response;
+
             if ($response->detail->status) {
                 $response = $response->detail->integrations[0];
 
-                RestaurantProvider::where('restaurant_id', $restaurantId)->where('provider_id', $providerId)->update([
-                    'restaurant_id' => $restaurantId,
-                    'provider_id' => $providerId,
+                $rp = RestaurantProvider::where('restaurant_id', $restaurantId)->where('provider_id', $providerId)->first();
+
+                $rp->update([
                     'name' => $response->name,
                     'slug' => $response->slug,
                     'status' => $response->status,
@@ -85,7 +85,7 @@ return $response;
                     'information' => json_encode($response->information),
                 ]);
 
-                return ['success' => true,'data' => $restaurant];
+                return ['success' => true, 'data' => $restaurant];
             } else {
                 return JsonResponse::error('Provider not updated');
             }
