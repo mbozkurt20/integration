@@ -5,6 +5,7 @@ namespace App\Http\Controllers\Api;
 use App\Http\Controllers\Controller;
 use App\Models\Order;
 use App\Models\Provider;
+use App\Models\Restaurant;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Http;
@@ -12,13 +13,6 @@ use Illuminate\Support\Facades\Http;
 // Bu controller order webhooks için kullanılıyor
 class OrderController extends Controller
 {
-    public string $endpoint;
-
-    public function __construct()
-    {
-        $this->endpoint = 'http://127.0.0.1/';
-    }
-
     /*
   * Gelen siparişleri kaydeden webhook
   */
@@ -28,10 +22,13 @@ class OrderController extends Controller
 
         $orderData = $request->all();
 
+        $restaurant = Restaurant::where('restaurant_id',$orderData['restaurantId'])->first();
+        $provider = Provider::where('provider_id',$orderData['providerId'])->first();
+
         $order = Order::create([
             'pid'           => $orderData['pid'] ?? null,
-            'restaurant_id' => $orderData['restaurantId'] ?? null,
-            'provider_id'   => $orderData['providerId'] ?? null,
+            'restaurant_id' => $restaurant->id ?? null,
+            'provider_id'   => $provider->id ?? null,
             'order_id'      => $orderData['_id'] ?? null,
             'shortCode'     => $orderData['shortCode'] ?? null,
             'status'        => $orderData['status'] ?? null,
@@ -40,14 +37,14 @@ class OrderController extends Controller
 
         $provider = Provider::find($orderData['providerId']);
         // 👉 Token YOK
-        $response = Http::post("{$this->endpoint}/entegra/add-order", [
+        $response = Http::post("{$restaurant->website}/entegra/add-order", [
             'pid'           => $order->pid,
             'restaurant_id' => $order->restaurant_id,
             'provider'      => json_encode($provider),
             'order_id'      => $order->order_id,
             'shortCode'     => $order->shortCode,
             'status'        => $order->status,
-            'data'          => $orderData,
+            'data'          => json_encode($orderData),
         ]);
 
         Log::info('Giden webhook response', [
