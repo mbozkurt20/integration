@@ -8,6 +8,12 @@ Route::middleware('check.url')->group(function () {
     Route::post('order', [\App\Http\Controllers\Api\OrderController::class, 'store']);
     Route::post('order/cancel', [\App\Http\Controllers\Api\OrderController::class, 'cancel']);
 
+    //sipariş işlemleri
+    Route::post('order/{orderId}/confirmation', [\App\Http\Controllers\Api\OrderController::class, 'confirmation']);
+    Route::post('order/{orderId}/reject-statuses', [\App\Http\Controllers\Api\OrderController::class, 'rejectStatuses']);
+    Route::post('order/{orderId}/reject', [\App\Http\Controllers\Api\OrderController::class, 'reject']);
+    Route::post('order/{orderId}/update-status', [\App\Http\Controllers\Api\OrderController::class, 'updateStatus']);
+
 //------------------BUSINESS----------------||
     Route::get('business', [\App\Http\Controllers\Api\BusinessController::class, 'index']);
     Route::post('business', [\App\Http\Controllers\Api\BusinessController::class, 'store']);

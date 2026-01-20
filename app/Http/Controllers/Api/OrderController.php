@@ -6,6 +6,8 @@ use App\Http\Controllers\Controller;
 use App\Models\Order;
 use App\Models\Provider;
 use App\Models\Restaurant;
+use App\Models\Setting;
+use App\Services\OrderService;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Http;
@@ -53,7 +55,7 @@ class OrderController extends Controller
      */
     function cancel(Request $request)
     {
-        $order =  Order::create([
+         Order::create([
             'data' => json_encode($request->all()),
             'status' => 'cancel'
         ]);
@@ -71,5 +73,50 @@ class OrderController extends Controller
         );
 
         return $response;
+    }
+
+    function confirmation(string $orderId)
+    {
+        $entegraMasterToken = Setting::first()->entegra_master_token;
+
+        OrderService::setToken($entegraMasterToken);
+
+        $res = OrderService::confirmation($orderId);
+
+        return response()->json(['success' => true,'data' => $res]);
+    }
+
+    function rejectStatuses(string $orderId)
+    {
+        $entegraMasterToken = Setting::first()->entegra_master_token;
+
+        OrderService::setToken($entegraMasterToken);
+
+        $res = OrderService::rejectStatuses($orderId);
+
+        return response()->json(['success' => true,'data' => $res]);
+    }
+
+    function reject(Request $request, string $orderId)
+    {
+        $entegraMasterToken = Setting::first()->entegra_master_token;
+
+        OrderService::setToken($entegraMasterToken);
+
+        $res = OrderService::reject($orderId,$request->all());
+
+        return response()->json(['success' => true,'data' => $res]);
+    }
+
+
+    function updateStatus(string $orderId)
+    {
+        $entegraMasterToken = Setting::first()->entegra_master_token;
+
+        OrderService::setToken($entegraMasterToken);
+
+        $res = OrderService::statusUpdate($orderId);
+
+        return response()->json(['success' => true,'data' => $res]);
     }
 }
