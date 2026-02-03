@@ -28,10 +28,10 @@ class OrderController extends Controller
         $provider = Provider::where('provider_id',$orderData['providerId'])->first();
 
         $order = Order::create([
+            'order_id'      => $orderData['_id'] ?? null,
             'pid'           => $orderData['pid'] ?? null,
             'restaurant_id' => $restaurant->id ?? null,
             'provider_id'   => $provider->id ?? null,
-            'order_id'      => $orderData['_id'] ?? null,
             'shortCode'     => $orderData['shortCode'] ?? null,
             'status'        => $orderData['status'] ?? null,
             'data'          => json_encode($orderData),
@@ -47,7 +47,7 @@ class OrderController extends Controller
             $orderData
         );
 
-        return $response;
+        return ['pos_ticket' => $order->id];
     }
 
     /*

@@ -22,7 +22,6 @@ class RestaurantProviderController extends Controller
         return JsonResponse::success('İşletmeye ait restaurantlar', $restaurants);
     }
 
-
     function store(Request $request, string $restaurantId, int $providerId)
     {
         $restaurant = Restaurant::where('restaurant_id', $restaurantId)->first();
