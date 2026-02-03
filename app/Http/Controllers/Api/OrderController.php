@@ -108,7 +108,6 @@ class OrderController extends Controller
         return response()->json(['success' => true,'data' => $res]);
     }
 
-
     function updateStatus(string $orderId)
     {
         $entegraMasterToken = Setting::first()->entegra_master_token;
