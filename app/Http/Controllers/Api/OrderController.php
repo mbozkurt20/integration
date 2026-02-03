@@ -88,9 +88,9 @@ class OrderController extends Controller
 
     function rejectStatuses(string $orderId)
     {
-        $entegraMasterToken = Setting::first()->entegra_master_token;
+        $entegraBusinessToken = Order::where('order_id',$orderId)->first()->restaurant->business->token;
 
-        OrderService::setToken($entegraMasterToken);
+        OrderService::setToken($entegraBusinessToken);
 
         $res = OrderService::rejectStatuses($orderId);
 
@@ -99,9 +99,9 @@ class OrderController extends Controller
 
     function reject(Request $request, string $orderId)
     {
-        $entegraMasterToken = Setting::first()->entegra_master_token;
+        $entegraBusinessToken = Order::where('order_id',$orderId)->first()->restaurant->business->token;
 
-        OrderService::setToken($entegraMasterToken);
+        OrderService::setToken($entegraBusinessToken);
 
         $res = OrderService::reject($orderId,$request->all());
 

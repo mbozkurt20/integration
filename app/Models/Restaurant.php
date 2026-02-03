@@ -8,13 +8,14 @@ use Illuminate\Database\Eloquent\SoftDeletes;
 
 class Restaurant extends Model
 {
-    use HasFactory,SoftDeletes;
+    use SoftDeletes;
 
     protected $fillable = [
         'business_id',
         'name',
         'restaurant_id',
         'website',
+        'token',
         'website_restaurant_id',
     ];
 

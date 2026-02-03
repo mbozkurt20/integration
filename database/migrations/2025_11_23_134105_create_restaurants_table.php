@@ -18,6 +18,7 @@ return new class extends Migration
             $table->string('logo')->nullable();
             $table->string('website')->nullable(); //hangi siteden geliyor
             $table->string('restaurant_id')->nullable(); //posentegra restaurant ıd
+            $table->text('token')->nullable(); //posentegra restaurant token
             $table->string('website_restaurant_id')->nullable(); //posentegra restaurant ıd
             $table->timestamps();
             $table->softDeletes();
