@@ -43,6 +43,7 @@ class RestaurantProviderController extends Controller
         if (!RestaurantProvider::where('restaurant_id', $restaurantId)->where('provider_id', $providerId)->exists()) {
             $response = RestaurantProviderService::newRestaurantProvider($restaurant->restaurant_id, $provider->provider_id, $request->all());
 
+            Log::info('Restaurant Provider Create Response', (array)json_encode($response));
             if ($response->success) {
                 $response = $response->data;
 
@@ -66,7 +67,7 @@ class RestaurantProviderController extends Controller
             }
         } else {
             $response = RestaurantProviderService::updateRestaurantProvider($restaurant->restaurant_id, $provider->provider_id, $request->all());
-
+            Log::info('Restaurant Provider Update Response', (array)json_encode($response));
             if ($response->detail->status) {
                 $response = $response->detail->integrations[0];
 

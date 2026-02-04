@@ -47,7 +47,7 @@ class OrderController extends Controller
             $orderData
         );
 
-        return ['pos_ticket' => $order->id];
+        return ['pos_ticket' => $orderData['pid']];
     }
 
     /*
@@ -72,7 +72,7 @@ class OrderController extends Controller
             $orderData
         );
 
-        return $response;
+        return ['pos_ticket' => $orderData['pid']];
     }
 
     function confirmation(string $orderId)
