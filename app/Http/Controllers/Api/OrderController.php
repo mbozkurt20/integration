@@ -27,25 +27,27 @@ class OrderController extends Controller
         $restaurant = Restaurant::where('restaurant_id',$orderData['restaurantId'])->first();
         $provider = Provider::where('provider_id',$orderData['providerId'])->first();
 
-        $order = Order::create([
-            'order_id'      => $orderData['_id'] ?? null,
-            'pid'           => $orderData['pid'] ?? null,
-            'restaurant_id' => $restaurant->id ?? null,
-            'provider_id'   => $provider->id ?? null,
-            'shortCode'     => $orderData['shortCode'] ?? null,
-            'status'        => $orderData['status'] ?? null,
-            'data'          => json_encode($orderData),
-        ]);
+        if (!Order::where('pid',$orderData['pid'])->exists()) {
+            $order = Order::create([
+                'order_id'      => $orderData['_id'] ?? null,
+                'pid'           => $orderData['pid'] ?? null,
+                'restaurant_id' => $restaurant->id ?? null,
+                'provider_id'   => $provider->id ?? null,
+                'shortCode'     => $orderData['shortCode'] ?? null,
+                'status'        => $orderData['status'] ?? null,
+                'data'          => json_encode($orderData),
+            ]);
 
-        $provider = Provider::find($orderData['providerId']);
+            $provider = Provider::find($orderData['providerId']);
 
-        $response = Http::withHeaders([
-            'Content-Type' => 'application/json',
-            'Accept' => 'application/json',
-        ])->post(
-            "{$restaurant->website}/entegra/add-order",
-            $orderData
-        );
+            $response = Http::withHeaders([
+                'Content-Type' => 'application/json',
+                'Accept' => 'application/json',
+            ])->post(
+                "{$restaurant->website}/entegra/add-order",
+                $orderData
+            );
+        }
 
         return ['pos_ticket' => $orderData['pid']];
     }
