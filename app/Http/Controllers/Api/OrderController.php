@@ -19,6 +19,8 @@ class OrderController extends Controller
         $orderData = $request->all();
         $pid = $orderData['pid'] ?? null;
 
+        Log::info("Pid: {$pid}, Gelen Data:  ".json_encode($orderData));
+
         if (!$pid) {
             return response()->json([
                 'success' => false,

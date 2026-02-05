@@ -37,6 +37,8 @@ class SendOrderToRestaurant implements ShouldQueue
     {
         $pid = $this->orderData['pid'] ?? null;
 
+        Log::info('Job çalıştı '.$pid);
+
         if (!$pid) {
             Telegram::send("❌ <b>Order Job</b>\nPID missing\n" . json_encode($this->orderData));
             return;
