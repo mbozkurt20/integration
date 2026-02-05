@@ -26,12 +26,12 @@ class OrderController extends Controller
 
         $restaurant = Restaurant::where('restaurant_id',$orderData['restaurantId'])->first();
 
-        if (!$restaurant){
+        if ($restaurant){
             $provider = Provider::where('provider_id',$orderData['providerId'])->first();
 
             if (!Order::where('pid',$orderData['pid'])->exists()) {
                 $order = Order::create([
-                    'order_id'      => $orderData['_id'] ?? null,
+                    'order_id'      =>  $orderData['_id'] ?? $orderData['id'] ?? $orderData['pid'] ?? null,
                     'pid'           => $orderData['pid'] ?? null,
                     'restaurant_id' => $restaurant->id ?? null,
                     'provider_id'   => $provider->id ?? null,
