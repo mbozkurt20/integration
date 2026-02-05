@@ -11,57 +11,53 @@ use App\Services\OrderService;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Http;
+use Illuminate\Support\Facades\DB;
 
 // Bu controller order webhooks için kullanılıyor
 class OrderController extends Controller
 {
-    /*
-  * Gelen siparişleri kaydeden webhook
-  */
     public function store(Request $request)
     {
         $orderData = $request->all();
-        Log::info('Webhook gelen data', $orderData);
+        $pid = $orderData['pid'] ?? null;
 
-        // 1. Restoran Kontrolü
-        $restaurant = Restaurant::where('restaurant_id', $orderData['restaurantId'])->first();
+        // 1. Hızlıca Restoran ve Provider ID'lerini al
+        $restaurant = DB::table('restaurants')
+            ->where('restaurant_id', $orderData['restaurantId'])
+            ->select('id', 'website')
+            ->first();
 
         if (!$restaurant) {
             return response()->json(['success' => false, 'message' => 'Restaurant Not Found'], 404);
         }
 
-        // 2. Mükerrer Kayıt Kontrolü ve Kayıt İşlemi
-        if (!Order::where('pid', $orderData['pid'])->exists()) {
-            try {
-                $provider = Provider::where('provider_id', $orderData['providerId'])->first();
+        // 2. Mükerrer kontrolü ve Kayıt (Eloquent olmadan)
+        $exists = DB::table('orders')->where('pid', $pid)->exists();
 
-                $order = Order::create([
-                    'order_id'      => $orderData['_id'] ?? $orderData['id'] ?? $orderData['pid'] ?? null,
-                    'pid'           => $orderData['pid'] ?? null,
-                    'restaurant_id' => $restaurant->id,
-                    'provider_id'   => $provider->id ?? null,
-                    'shortCode'     => $orderData['shortCode'] ?? null,
-                    'status'        => $orderData['status'] ?? null,
-                    'data'          => json_encode($orderData),
-                ]);
+        if (!$exists) {
+            $providerId = DB::table('providers')
+                ->where('provider_id', $orderData['providerId'])
+                ->value('id');
 
-                // 3. Zaman Alan HTTP İsteğini Yanıt Sonrasına Ertele (Dispatch After Response)
-                // Bu kısım kuyruk (queue) ayarı gerektirmez, yanıt dönüldükten hemen sonra çalışır.
-                dispatch(function () use ($restaurant, $orderData) {
-                    Http::withHeaders([
-                        'Content-Type' => 'application/json',
-                        'Accept' => 'application/json',
-                    ])->post("{$restaurant->website}/entegra/add-order", $orderData);
-                })->afterResponse();
+            DB::table('orders')->insert([
+                'order_id'      => $orderData['_id'] ?? $orderData['id'] ?? $pid,
+                'pid'           => $pid,
+                'restaurant_id' => $restaurant->id,
+                'provider_id'   => $providerId,
+                'shortCode'     => $orderData['shortCode'] ?? null,
+                'status'        => $orderData['status'] ?? null,
+                'data'          => json_encode($orderData),
+                'created_at'    => now(), // Query Builder'da elle eklemelisin
+                'updated_at'    => now(),
+            ]);
 
-            } catch (\Exception $exception) {
-                Log::error('Sipariş kayıt hatası: ' . $exception->getMessage());
-                return response()->json(['success' => false, 'error' => 'Internal Server Error'], 500);
-            }
+            // 3. Arka planda HTTP isteği
+            dispatch(function () use ($restaurant, $orderData) {
+                Http::post("{$restaurant->website}/entegra/add-order", $orderData);
+            })->afterResponse();
         }
 
-        // 4. Hızlıca Yanıt Dön
-        return response()->json(['pos_ticket' => $orderData['pid']], 200);
+        return ['pos_ticket' => $pid];
     }
 
     /*
@@ -70,24 +66,31 @@ class OrderController extends Controller
     public function cancel(Request $request)
     {
         $orderData = $request->all();
+        $pid = $orderData['pid'] ?? null;
 
-        // 1. Veritabanı kaydını anında yapıyoruz (Hız için en başa aldık)
-        // Not: restaurant_id ve provider_id alanlarını da eklemek raporlama için iyi olabilir
-        $restaurant = Restaurant::where('restaurant_id', $orderData['restaurantId'])->first();
-        $provider = Provider::where('provider_id', $orderData['providerId'])->first();
+        // 1. Gerekli ID'leri ve website bilgisini tek bir hamlede SQL ile çek
+        $restaurant = DB::table('restaurants')
+            ->where('restaurant_id', $orderData['restaurantId'])
+            ->select('id', 'website')
+            ->first();
 
-        $order = Order::create([
-            'pid'           => $orderData['pid'] ?? null,
+        $providerId = DB::table('providers')
+            ->where('provider_id', $orderData['providerId'])
+            ->value('id');
+
+        // 2. Doğrudan SQL Insert (Eloquent eventleri tetiklenmez, çok daha hızlıdır)
+        DB::table('orders')->insert([
+            'pid'           => $pid,
             'restaurant_id' => $restaurant->id ?? null,
-            'provider_id'   => $provider->id ?? null,
+            'provider_id'   => $providerId,
             'status'        => 'cancel',
             'data'          => json_encode($orderData),
+            'created_at'    => now(),
+            'updated_at'    => now()
         ]);
 
-        // 2. Eğer restoran bulunamadıysa dış siteye istek atmaya gerek yok
+        // 3. Yanıt sonrası HTTP isteği
         if ($restaurant && !empty($restaurant->website)) {
-
-            // 3. Dış servis isteğini yanıt sonrasına (arka plana) atıyoruz
             dispatch(function () use ($restaurant, $orderData) {
                 try {
                     Http::withHeaders([
@@ -95,14 +98,13 @@ class OrderController extends Controller
                         'Accept' => 'application/json',
                     ])->post("{$restaurant->website}/entegra/cancel-order", $orderData);
                 } catch (\Exception $e) {
-                    Log::error("İptal webhook iletilemedi: " . $e->getMessage());
+                    Log::error("İptal iletilemedi: " . $e->getMessage());
                 }
             })->afterResponse();
-
         }
 
-        // 4. Yanıtı ışık hızında dönüyoruz
-        return response()->json(['pos_ticket' => $orderData['pid'] ?? null], 200);
+        // 4. Kullanıcıya/Servise anında cevap dön
+        return ['pos_ticket' => $pid];
     }
 
     function confirmation(string $orderId)
