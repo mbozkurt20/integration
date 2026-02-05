@@ -3,18 +3,15 @@
 namespace App\Http\Controllers\Api;
 
 use App\Http\Controllers\Controller;
+use App\Jobs\SendOrderToRestaurant;
 use App\Models\Order;
-use App\Models\Provider;
-use App\Models\Restaurant;
 use App\Models\Setting;
 use App\Services\OrderService;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Http;
 use Illuminate\Support\Facades\DB;
-use Illuminate\Support\Str;
 
-// Bu controller order webhooks için kullanılıyor
 class OrderController extends Controller
 {
     public function store(Request $request)
@@ -22,44 +19,34 @@ class OrderController extends Controller
         $orderData = $request->all();
         $pid = $orderData['pid'] ?? null;
 
-        // 1. Hızlıca Restoran ve Provider ID'lerini al
+        if (!$pid) {
+            return response()->json([
+                'success' => false,
+                'message' => 'PID missing'
+            ], 422);
+        }
+
         $restaurant = DB::table('restaurants')
             ->where('restaurant_id', $orderData['restaurantId'])
             ->select('id', 'website')
             ->first();
 
         if (!$restaurant) {
-            return response()->json(['success' => false, 'message' => 'Restaurant Not Found'], 404);
+            return response()->json([
+                'success' => false,
+                'message' => 'Restaurant Not Found'
+            ], 404);
         }
 
-        // 2. Mükerrer kontrolü ve Kayıt (Eloquent olmadan)
-        $exists = DB::table('orders')->where('pid', $pid)->exists();
+        // 🚀 Her şeyi job'a bırak
+        SendOrderToRestaurant::dispatch(
+            $orderData,
+            $restaurant->id,
+            $restaurant->website
+        );
 
-        if (!$exists) {
-            $providerId = DB::table('providers')
-                ->where('provider_id', $orderData['providerId'])
-                ->value('id');
-
-            DB::table('orders')->insert([
-                'id' => Str::uuid(),
-                'order_id'      => $orderData['_id'] ?? $orderData['id'] ?? $pid,
-                'pid'           => $pid,
-                'restaurant_id' => $restaurant->id,
-                'provider_id'   => $providerId,
-                'shortCode'     => $orderData['shortCode'] ?? null,
-                'status'        => $orderData['status'] ?? null,
-                'data'          => json_encode($orderData),
-                'created_at'    => now(), // Query Builder'da elle eklemelisin
-                'updated_at'    => now(),
-            ]);
-
-            // 3. Arka planda HTTP isteği
-            dispatch(function () use ($restaurant, $orderData) {
-                Http::post("{$restaurant->website}/entegra/add-order", $orderData);
-            })->afterResponse();
-        }
-
-        return ['pos_ticket' => $pid];
+        // Client beklemez
+      return  ['pos_ticket' => $pid ];
     }
 
     /*
