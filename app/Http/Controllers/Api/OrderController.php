@@ -25,31 +25,36 @@ class OrderController extends Controller
         $orderData = $request->all();
 
         $restaurant = Restaurant::where('restaurant_id',$orderData['restaurantId'])->first();
-        $provider = Provider::where('provider_id',$orderData['providerId'])->first();
 
-        if (!Order::where('pid',$orderData['pid'])->exists()) {
-            $order = Order::create([
-                'order_id'      => $orderData['_id'] ?? null,
-                'pid'           => $orderData['pid'] ?? null,
-                'restaurant_id' => $restaurant->id ?? null,
-                'provider_id'   => $provider->id ?? null,
-                'shortCode'     => $orderData['shortCode'] ?? null,
-                'status'        => $orderData['status'] ?? null,
-                'data'          => json_encode($orderData),
-            ]);
+        if (!$restaurant){
+            $provider = Provider::where('provider_id',$orderData['providerId'])->first();
 
-            $provider = Provider::find($orderData['providerId']);
+            if (!Order::where('pid',$orderData['pid'])->exists()) {
+                $order = Order::create([
+                    'order_id'      => $orderData['_id'] ?? null,
+                    'pid'           => $orderData['pid'] ?? null,
+                    'restaurant_id' => $restaurant->id ?? null,
+                    'provider_id'   => $provider->id ?? null,
+                    'shortCode'     => $orderData['shortCode'] ?? null,
+                    'status'        => $orderData['status'] ?? null,
+                    'data'          => json_encode($orderData),
+                ]);
 
-            $response = Http::withHeaders([
-                'Content-Type' => 'application/json',
-                'Accept' => 'application/json',
-            ])->post(
-                "{$restaurant->website}/entegra/add-order",
-                $orderData
-            );
+                $provider = Provider::find($orderData['providerId']);
+
+                $response = Http::withHeaders([
+                    'Content-Type' => 'application/json',
+                    'Accept' => 'application/json',
+                ])->post(
+                    "{$restaurant->website}/entegra/add-order",
+                    $orderData
+                );
+            }
+
+            return ['pos_ticket' => $orderData['pid']];
         }
 
-        return ['pos_ticket' => $orderData['pid']];
+        return response()->json(['success' => false, 'Restaurant Not Found'],404);
     }
 
     /*
