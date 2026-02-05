@@ -12,6 +12,7 @@ use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Http;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Str;
 
 // Bu controller order webhooks için kullanılıyor
 class OrderController extends Controller
@@ -40,6 +41,7 @@ class OrderController extends Controller
                 ->value('id');
 
             DB::table('orders')->insert([
+                'id' => Str::uuid(),
                 'order_id'      => $orderData['_id'] ?? $orderData['id'] ?? $pid,
                 'pid'           => $pid,
                 'restaurant_id' => $restaurant->id,
