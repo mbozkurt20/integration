@@ -118,7 +118,7 @@ class OrderController extends Controller
         if (!$order->restaurant){
             return response()->json(['success' => false,'message' => 'Restaurant Bulunamadı']);
         }
-        $entegraBusinessToken = Order::where('order_id',$orderId)->first()->restaurant->business->token;
+        $entegraBusinessToken = $order->restaurant->business->token;
 
         OrderService::setToken($entegraBusinessToken);
 
@@ -129,7 +129,15 @@ class OrderController extends Controller
 
     function reject(Request $request, string $orderId)
     {
-        $entegraBusinessToken = Order::where('order_id',$orderId)->first()->restaurant->business->token;
+        $order = Order::where('pid',$orderId)->first();
+        if (!$order){
+            return response()->json(['success' => false,'message' => 'Sipariş Bulunamadı']);
+        }
+        if (!$order->restaurant){
+            return response()->json(['success' => false,'message' => 'Restaurant Bulunamadı']);
+        }
+
+        $entegraBusinessToken =$order->restaurant->business->token;
 
         OrderService::setToken($entegraBusinessToken);
 
