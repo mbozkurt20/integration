@@ -111,6 +111,13 @@ class OrderController extends Controller
 
     function rejectStatuses(string $orderId)
     {
+        $order = Order::where('order_id',$orderId)->first();
+        if (!$order){
+            return response()->json(['success' => false,'message' => 'Sipariş Bulunamadı']);
+        }
+        if (!$order->restaurant){
+            return response()->json(['success' => false,'message' => 'Restaurant Bulunamadı']);
+        }
         $entegraBusinessToken = Order::where('order_id',$orderId)->first()->restaurant->business->token;
 
         OrderService::setToken($entegraBusinessToken);
@@ -139,6 +146,6 @@ class OrderController extends Controller
 
         $res = OrderService::statusUpdate($orderId);
 
-        return response()->json(['success' => true,'data' => $res]);
+        return $res;
     }
 }
