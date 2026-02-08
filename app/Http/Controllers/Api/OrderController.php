@@ -111,7 +111,7 @@ class OrderController extends Controller
 
     function rejectStatuses(string $orderId)
     {
-        $order = Order::where('order_id',$orderId)->first();
+        $order = Order::where('pid',$orderId)->first();
         if (!$order){
             return response()->json(['success' => false,'message' => 'Sipariş Bulunamadı']);
         }
