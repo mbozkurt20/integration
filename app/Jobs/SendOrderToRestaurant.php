@@ -44,15 +44,11 @@ class SendOrderToRestaurant implements ShouldQueue
             return;
         }
 
-        if (DB::table('orders')->where('pid', $pid)->exists()) {
-            return;
-        }
-
         $providerId = DB::table('providers')
             ->where('provider_id', $this->orderData['providerId'] ?? null)
             ->value('id');
 
-        DB::table('orders')->insert([
+        DB::table('orders')->updateOrInsert([
             'id'            => Str::uuid(),
             'order_id'      => $this->orderData['_id'] ?? $this->orderData['id'] ?? $pid,
             'pid'           => $pid,

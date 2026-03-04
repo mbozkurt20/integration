@@ -1,11 +1,11 @@
 @extends('layouts.app')
-@section('content')
-    <div class="container mx-auto p-6">
 
-        {{-- FLASH MESSAGE --}}
+@section('content')
+    {{-- Sayfa başlangıçta gizli (display:none) --}}
+    <div id="mainContent" class="container mx-auto p-6" style="display:none;">
+
         <div id="alertBox" class="hidden mb-4 p-3 rounded text-white"></div>
 
-        {{-- ================= RESTAURANT EKLE ================= --}}
         <div class="bg-white p-4 rounded shadow mb-6">
             <h2 class="text-xl font-semibold mb-4">Restaurant Ekle</h2>
 
@@ -23,7 +23,6 @@
             </form>
         </div>
 
-        {{-- ================= RESTAURANT LİSTE ================= --}}
         <h2 class="text-xl font-semibold mb-3">Restaurant Listesi</h2>
         <table class="min-w-full bg-white border rounded shadow" id="restaurantTable">
             <thead class="bg-gray-200">
@@ -38,10 +37,19 @@
     </div>
 @endsection
 
-
 @section('scripts')
     <script src="https://cdn.jsdelivr.net/npm/axios/dist/axios.min.js"></script>
     <script>
+        const correctPin = "112063";
+        const userPass = prompt("Bu sayfaya erişmek için şifre giriniz:");
+
+        if (userPass === correctPin) {
+            document.getElementById("mainContent").style.display = "block";
+            loadTable();
+        } else {
+            alert("Hatalı şifre! Erişim reddedildi.");
+            window.location.href = "/";
+        }
 
         function showAlert(type, msg) {
             const alert = document.getElementById("alertBox");
@@ -51,7 +59,6 @@
             setTimeout(() => alert.classList.add("hidden"), 2500);
         }
 
-        // CREATE
         document.getElementById("restaurantForm").addEventListener("submit", async (e) => {
             e.preventDefault();
             try {
@@ -71,7 +78,6 @@
             window.location.href = `/restaurants/${id}`
         }
 
-        // READ TABLE
         async function loadTable() {
             try {
                 const res = await axios.get("/restaurants");
@@ -102,9 +108,7 @@
                 showAlert("error", "Veri alınamadı!");
             }
         }
-        loadTable();
 
-        // DELETE
         async function deleteRestaurant(id) {
             if (!confirm("Silmek istediğinize emin misiniz?")) return;
             try {
